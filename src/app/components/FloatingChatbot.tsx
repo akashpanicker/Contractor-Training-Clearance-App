@@ -1,213 +1,321 @@
-import { useState } from "react";
-import { MessageSquare, X, Send } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { MessageSquare, X, Send, Bot, User as UserIcon } from "lucide-react";
 import { useBooking } from "../contexts/BookingContext";
 import { useUser } from "../contexts/UserContext";
 import { toast } from "sonner";
+import {
+  generateResponse,
+  type PendingAction,
+  type AssistantContext,
+} from "../services/assistantEngine";
 
 interface Message {
-  id: number;
+  id: string;
   text: string;
   sender: "user" | "bot";
-}
-
-const monthNames = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
-
-function parseDate(dateStr: string): Date | null {
-  const parts = dateStr.trim().split(/\s+/);
-  if (parts.length >= 2) {
-    const monthStr = parts[0];
-    const dayStr = parts[1];
-    const month = monthNames.findIndex(m => m.toLowerCase().startsWith(monthStr.toLowerCase()));
-    const day = parseInt(dayStr);
-
-    if (month !== -1 && !isNaN(day)) {
-      return new Date(2026, month, day);
-    }
-  }
-  return null;
+  timestamp: Date;
 }
 
 export function FloatingChatbot() {
-  const { addBooking, updateBooking, bookings, cancelBooking } = useBooking();
+  const { addBooking, updateBooking, bookings, cancelBooking, getAvailableSeats, incrementSeats } = useBooking();
   const { user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "Hi! How can I help you with training scheduling?", sender: "bot" },
+    {
+      id: "welcome",
+      text: "Hello. I am your training assistant. I can help you schedule, reschedule, or cancel training sessions, check your clearance status, view seat availability, and more.\n\nType 'help' to see everything I can do.",
+      sender: "bot",
+      timestamp: new Date(),
+    },
   ]);
   const [input, setInput] = useState("");
-  const [pendingAction, setPendingAction] = useState<{ type: string; data?: any } | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const getNextUpcomingBooking = () => {
-    return bookings.find(b => b.status === "upcoming");
+  // Auto-scroll to latest message
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping, scrollToBottom]);
+
+  // Focus input when chat opens
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 300);
+    }
+  }, [isOpen]);
+
+  const addMessage = (text: string, sender: "user" | "bot") => {
+    const newMsg: Message = {
+      id: `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      text,
+      sender,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, newMsg]);
+    return newMsg;
   };
 
   const handleSend = () => {
     if (!input.trim()) return;
 
-    const userMessage: Message = { id: messages.length + 1, text: input, sender: "user" };
-    setMessages((prev) => [...prev, userMessage]);
-
-    let botResponse = "";
-    const lowerInput = input.toLowerCase();
-
-    // Handle pending actions (e.g., confirmations)
-    if (pendingAction) {
-      if (lowerInput.includes("yes") || lowerInput.includes("confirm")) {
-        if (pendingAction.type === "cancel") {
-          cancelBooking(pendingAction.data.id);
-          toast.success("Training canceled!");
-          botResponse = "✅ Your training has been canceled. Anything else?";
-        }
-        setPendingAction(null);
-      } else if (lowerInput.includes("no") || lowerInput.includes("cancel")) {
-        botResponse = "Okay, no problem. What else can I help with?";
-        setPendingAction(null);
-      } else {
-        botResponse = "Please reply 'yes' to confirm or 'no' to cancel.";
-      }
-    } else {
-      // Main conversation logic
-      if (lowerInput.includes("when") || lowerInput.includes("next") || lowerInput.includes("upcoming") || lowerInput.includes("what")) {
-        const nextBooking = getNextUpcomingBooking();
-        if (nextBooking) {
-          botResponse = `📅 Your next training is on ${nextBooking.date} at ${nextBooking.time}.\n📍 Location: ${nextBooking.location}\n🏢 Company: ${nextBooking.company}\n\nNeed to reschedule or cancel?`;
-        } else {
-          botResponse = "You don't have any upcoming training. Want to schedule one? Try: 'schedule on May 15 at 10.00 AM'";
-        }
-      } else if (lowerInput.includes("schedule") || lowerInput.includes("book")) {
-        const scheduleRegex = /(?:schedule|book).*on\s+([\w]+\s+\d+).*at\s+(\d+\.?\d*\s*(?:AM|PM|am|pm))/i;
-        const match = input.match(scheduleRegex);
-
-        if (match) {
-          const dateStr = match[1];
-          const time = match[2].toUpperCase();
-          const date = parseDate(dateStr);
-
-          if (date) {
-            try {
-              addBooking({
-                date: date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-                time,
-                training: "Training XYZ",
-                company: "Oxy",
-                location: "Oxy Office",
-                status: "upcoming",
-                dateObject: date,
-              });
-              toast.success("Training scheduled!");
-              botResponse = `✅ Training scheduled for ${dateStr} at ${time}! Is there anything else?`;
-            } catch (error) {
-              botResponse = "Oops, something went wrong. Try again.";
-            }
-          } else {
-            botResponse = "I couldn't understand the date. Try: 'schedule on May 15 at 10.00 AM'";
-          }
-        } else {
-          botResponse = "Sure, when and what time? For example: 'schedule on May 15 at 10.00 AM'";
-        }
-      } else if (lowerInput.includes("reschedule") || lowerInput.includes("change")) {
-        const rescheduleRegex = /(?:reschedule|change).*to\s+([\w]+\s+\d+).*at\s+(\d+\.?\d*\s*(?:AM|PM|am|pm))/i;
-        const match = input.match(rescheduleRegex);
-        if (match && bookings.length > 0) {
-          const dateStr = match[1];
-          const time = match[2].toUpperCase();
-          const date = parseDate(dateStr);
-
-          if (date) {
-            const booking = getNextUpcomingBooking();
-            if (booking) {
-              updateBooking(booking.id, {
-                date: date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-                time,
-                dateObject: date,
-              });
-              toast.success("Training rescheduled!");
-              botResponse = `✅ Rescheduled to ${dateStr} at ${time}! All set?`;
-            } else {
-              botResponse = "No upcoming booking to reschedule.";
-            }
-          } else {
-            botResponse = "Couldn't parse the new date. Try: 'reschedule to June 20 at 2.00 PM'";
-          }
-        } else {
-          botResponse = "What date and time? For example: 'reschedule to June 20 at 2.00 PM'";
-        }
-      } else if (lowerInput.includes("cancel") || lowerInput.includes("delete")) {
-        const nextBooking = getNextUpcomingBooking();
-        if (nextBooking) {
-          setPendingAction({ type: "cancel", data: nextBooking });
-          botResponse = `Are you sure you want to cancel training on ${nextBooking.date} at ${nextBooking.time}? Reply 'yes' to confirm.`;
-        } else {
-          botResponse = "No upcoming training to cancel.";
-        }
-      } else if (lowerInput.includes("help") || lowerInput.includes("what")) {
-        botResponse = "I can help with:\n• 'When is my next training?'\n• 'Schedule on May 15 at 10.00 AM'\n• 'Reschedule to June 20 at 2.00 PM'\n• 'Cancel my training'\n\nWhat would you like?";
-      } else {
-        botResponse = "I'm not sure I understood. Try asking about your next training, scheduling, or canceling. Or say 'help'!";
-      }
-    }
-
-    const botMessage: Message = { id: messages.length + 2, text: botResponse, sender: "bot" };
-    setMessages((prev) => [...prev, botMessage]);
+    const userInput = input.trim();
+    addMessage(userInput, "user");
     setInput("");
+
+    // Show typing indicator
+    setIsTyping(true);
+
+    // Simulate a brief processing delay for realism
+    setTimeout(() => {
+      const context: AssistantContext = {
+        user: user || null,
+        bookings,
+        pendingAction,
+        getAvailableSeats,
+      };
+
+      const response = generateResponse(userInput, context);
+
+      // Execute action if any
+      if (response.action) {
+        switch (response.action.type) {
+          case "book": {
+            const payload = response.action.payload;
+            addBooking({
+              date: payload.date,
+              time: payload.time,
+              training: payload.training || "Training XYZ",
+              company: payload.company || "Oxy",
+              location: payload.location || "Oxy Office",
+              status: "upcoming",
+              dateObject: payload.dateObject,
+            });
+            toast.success("Training scheduled successfully");
+            break;
+          }
+          case "cancel": {
+            const { bookingId } = response.action.payload;
+            cancelBooking(bookingId);
+            toast.success("Training cancelled successfully");
+            break;
+          }
+          case "reschedule": {
+            const p = response.action.payload;
+            // Cancel old and book new
+            cancelBooking(p.bookingId);
+            addBooking({
+              date: p.newDate,
+              time: p.newTime,
+              training: p.training || "Training XYZ",
+              company: p.company || "Oxy",
+              location: p.location || "Oxy Office",
+              status: "upcoming",
+              dateObject: p.newDateObject,
+            });
+            toast.success("Training rescheduled successfully");
+            break;
+          }
+        }
+      }
+
+      // Update pending action state
+      setPendingAction(response.newPendingAction);
+
+      // Add bot response
+      setIsTyping(false);
+      addMessage(response.text, "bot");
+    }, 400 + Math.random() * 400); // 400-800ms delay
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const formatMessageText = (text: string) => {
+    // Split into lines and render with proper formatting
+    return text.split("\n").map((line, idx) => {
+      const trimmedLine = line.trim();
+
+      // Empty line = spacer
+      if (trimmedLine === "") {
+        return <div key={idx} className="chat-line-spacer" />;
+      }
+
+      // Lines starting with a number and period are list items
+      if (/^\d+\.\s/.test(trimmedLine)) {
+        return (
+          <div key={idx} className="chat-line chat-line--list">
+            {trimmedLine}
+          </div>
+        );
+      }
+
+      // Lines starting with "- " are bullet items
+      if (trimmedLine.startsWith("- ")) {
+        return (
+          <div key={idx} className="chat-line chat-line--bullet">
+            {trimmedLine}
+          </div>
+        );
+      }
+
+      // Lines with ": " are key-value pairs
+      if (/^[A-Z][A-Za-z\s]+:/.test(trimmedLine) && !trimmedLine.startsWith("Example")) {
+        const colonIdx = trimmedLine.indexOf(":");
+        const label = trimmedLine.substring(0, colonIdx);
+        const value = trimmedLine.substring(colonIdx + 1).trim();
+        return (
+          <div key={idx} className="chat-line chat-line--kv">
+            <span className="chat-line__label">{label}:</span> {value}
+          </div>
+        );
+      }
+
+      // Indented lines (details under list items)
+      if (line.startsWith("   ")) {
+        return (
+          <div key={idx} className="chat-line chat-line--detail">
+            {trimmedLine}
+          </div>
+        );
+      }
+
+      // Default line
+      return (
+        <div key={idx} className="chat-line">
+          {trimmedLine}
+        </div>
+      );
+    });
   };
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="chat-fab"
-        aria-label="Open chatbot"
+        className={`chat-fab ${isOpen ? "chat-fab--active" : ""}`}
+        aria-label={isOpen ? "Close assistant" : "Open assistant"}
+        id="chat-fab-toggle"
       >
-        {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
+        <div className={`chat-fab__icon ${isOpen ? "chat-fab__icon--rotate" : ""}`}>
+          {isOpen ? <X size={22} /> : <MessageSquare size={22} />}
+        </div>
+        {!isOpen && pendingAction && (
+          <span className="chat-fab__badge" />
+        )}
       </button>
 
-      {/* Chatbot Window */}
+      {/* Chat Window */}
       {isOpen && (
-        <div className="chat-window">
+        <div className={`chat-window ${isOpen ? "chat-window--open" : ""}`} id="chat-window">
           {/* Header */}
           <div className="chat-window__header">
-            <h3 className="font-semibold">Training Assistant</h3>
+            <div className="chat-window__header-content">
+              <div className="chat-window__header-avatar">
+                <Bot size={18} />
+              </div>
+              <div>
+                <h3 className="chat-window__header-title">Training Assistant</h3>
+                <span className="chat-window__header-status">Online</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="chat-window__close-btn"
+              aria-label="Close chat"
+            >
+              <X size={16} />
+            </button>
           </div>
 
-          {/* Messages */}
-          <div className="chat-window__messages">
+          {/* Messages Container */}
+          <div className="chat-window__messages" id="chat-messages">
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                className={`chat-msg-row ${msg.sender === "user" ? "chat-msg-row--right" : "chat-msg-row--left"}`}
               >
+                {msg.sender === "bot" && (
+                  <div className="chat-msg__avatar chat-msg__avatar--bot">
+                    <Bot size={14} />
+                  </div>
+                )}
                 <div
-                  className={`chat-floating-message ${msg.sender === "user"
-                      ? "chat-floating-message--user"
-                      : "chat-floating-message--bot"
+                  className={`chat-msg ${msg.sender === "user" ? "chat-msg--user" : "chat-msg--bot"
                     }`}
                 >
-                  {msg.text}
+                  <div className="chat-msg__content">
+                    {formatMessageText(msg.text)}
+                  </div>
+                  <span className="chat-msg__time">
+                    {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </span>
                 </div>
+                {msg.sender === "user" && (
+                  <div className="chat-msg__avatar chat-msg__avatar--user">
+                    <UserIcon size={14} />
+                  </div>
+                )}
               </div>
             ))}
+
+            {/* Typing Indicator */}
+            {isTyping && (
+              <div className="chat-msg-row chat-msg-row--left">
+                <div className="chat-msg__avatar chat-msg__avatar--bot">
+                  <Bot size={14} />
+                </div>
+                <div className="chat-msg chat-msg--bot chat-msg--typing">
+                  <div className="typing-indicator">
+                    <span className="typing-dot" />
+                    <span className="typing-dot" />
+                    <span className="typing-dot" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
+          {/* Pending Action Indicator */}
+          {pendingAction && (
+            <div className="chat-window__pending">
+              Awaiting your confirmation (yes/no)
+            </div>
+          )}
+
+          {/* Input Area */}
           <div className="chat-window__input-area">
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Ask me anything about training..."
+              onKeyDown={handleKeyDown}
+              placeholder={pendingAction ? "Type yes or no..." : "Ask me anything..."}
               className="chat-input chat-input--floating"
+              id="chat-input"
+              autoComplete="off"
             />
             <button
               onClick={handleSend}
-              className="btn btn--primary btn--icon"
+              className={`chat-send-btn ${input.trim() ? "chat-send-btn--active" : ""}`}
+              disabled={!input.trim()}
+              aria-label="Send message"
+              id="chat-send-btn"
             >
-              <Send size={18} />
+              <Send size={16} />
             </button>
           </div>
         </div>
