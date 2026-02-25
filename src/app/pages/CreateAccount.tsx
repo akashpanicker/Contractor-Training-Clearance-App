@@ -98,7 +98,7 @@ export default function CreateAccount() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Mark all fields as touched
     setTouched({
       firstName: true,
@@ -116,7 +116,7 @@ export default function CreateAccount() {
     setLoading(true);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     // Save user data to context
     setUser(formData);
     setLoading(false);
@@ -125,19 +125,19 @@ export default function CreateAccount() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A2634] to-[#2D4356] flex flex-col">
+    <div className="page page--dark-gradient">
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-16 pt-11">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-3">
+        <div className="create-account__header">
+          <h1 className="create-account__title">
             Create Account
           </h1>
-          <p className="text-sm text-[#E5E7EB]">
+          <p className="create-account__subtitle">
             Already have an account?{" "}
             <button
               onClick={() => navigate("/my-bookings")}
-              className="text-[#60A5FA] font-semibold hover:underline"
+              className="create-account__link"
             >
               Login
             </button>
@@ -145,8 +145,8 @@ export default function CreateAccount() {
         </div>
 
         {/* Form Card */}
-        <div className="w-full max-w-[390px] bg-white rounded-2xl p-6 shadow-lg">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <div className="create-account__card">
+          <form onSubmit={handleSubmit} className="create-account__form">
             <InputField
               label="First Name"
               value={formData.firstName}
@@ -207,8 +207,8 @@ export default function CreateAccount() {
       </div>
 
       {/* Home Indicator */}
-      <div className="h-8 flex items-center justify-center">
-        <div className="w-36 h-1 bg-white/30 rounded-full"></div>
+      <div className="home-indicator">
+        <div className="home-indicator__bar"></div>
       </div>
     </div>
   );

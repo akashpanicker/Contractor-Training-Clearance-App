@@ -3,6 +3,7 @@ import { router } from "./routes";
 import { UserProvider } from "./contexts/UserContext";
 import { BookingProvider } from "./contexts/BookingContext";
 import { Toaster } from "sonner";
+import "../App.scss";
 
 export default function App() {
   return (

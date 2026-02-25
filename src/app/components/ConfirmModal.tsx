@@ -25,31 +25,25 @@ export function ConfirmModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="modal-overlay">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={onClose}
-      />
+      <div className="modal-overlay__backdrop" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in duration-200">
+      <div className="modal animate-in fade-in duration-200">
         {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-lg hover:bg-gray-100 transition-colors"
-        >
-          <X size={20} className="text-gray-500" />
+        <button onClick={onClose} className="modal__close-btn">
+          <X size={20} />
         </button>
 
         {/* Content */}
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{title}</h2>
-          <p className="text-sm text-gray-600">{message}</p>
+          <h2 className="modal__title">{title}</h2>
+          <p className="modal__message">{message}</p>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3">
+        <div className="modal__actions">
           <Button variant="secondary" fullWidth onClick={onClose}>
             {cancelText}
           </Button>

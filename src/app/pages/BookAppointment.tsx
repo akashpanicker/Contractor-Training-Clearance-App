@@ -33,11 +33,11 @@ export default function BookAppointment() {
   const navigate = useNavigate();
   const location = useLocation();
   const { addBooking, getAvailableSeats, updateBooking, cancelBooking } = useBooking();
-  
+
   // Check if we're rescheduling
   const rescheduleData = location.state as { bookingId?: string; oldDate?: Date; oldTime?: string } | null;
   const isRescheduling = !!rescheduleData?.bookingId;
-  
+
   const [currentMonth, setCurrentMonth] = React.useState(new Date(2026, 2, 1)); // March 2026
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = React.useState<string | null>(null);
@@ -46,14 +46,14 @@ export default function BookAppointment() {
   const generateCalendarDays = () => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
-    
+
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
-    
+
     const days: CalendarDay[] = [];
-    
+
     // Previous month days
     const prevMonthLastDay = new Date(year, month, 0).getDate();
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
@@ -64,16 +64,16 @@ export default function BookAppointment() {
         isPast: true,
       });
     }
-    
+
     // Current month days
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       date.setHours(0, 0, 0, 0);
       const isPast = date < today;
-      
+
       days.push({
         day,
         date,
@@ -81,7 +81,7 @@ export default function BookAppointment() {
         isPast,
       });
     }
-    
+
     // Next month days
     const remainingDays = 42 - days.length; // 6 rows * 7 days
     for (let day = 1; day <= remainingDays; day++) {
@@ -92,7 +92,7 @@ export default function BookAppointment() {
         isPast: false,
       });
     }
-    
+
     return days;
   };
 
@@ -139,7 +139,7 @@ export default function BookAppointment() {
       if (rescheduleData.oldDate && rescheduleData.oldTime && rescheduleData.bookingId) {
         cancelBooking(rescheduleData.bookingId);
       }
-      
+
       // Create new booking
       addBooking({
         date: dateString,
@@ -150,7 +150,7 @@ export default function BookAppointment() {
         status: "upcoming",
         dateObject: selectedDate,
       });
-      
+
       toast.success("Training rescheduled successfully");
     } else {
       // New booking
@@ -163,7 +163,7 @@ export default function BookAppointment() {
         status: "upcoming",
         dateObject: selectedDate,
       });
-      
+
       toast.success("Training booked successfully");
     }
 
@@ -172,61 +172,75 @@ export default function BookAppointment() {
 
   const isConfirmDisabled = !selectedDate || !selectedTime;
 
+  // Helper to build calendar day class names
+  const getCalendarDayClass = (isSelected: boolean, isDisabled: boolean, isCurrentMonth: boolean) => {
+    const classes = ["calendar-day"];
+    if (isSelected) classes.push("calendar-day--selected");
+    if (isDisabled && !isSelected) classes.push("calendar-day--disabled");
+    if (!isDisabled && !isSelected && isCurrentMonth) classes.push("calendar-day--current-month");
+    if (!isDisabled && !isSelected && !isCurrentMonth) classes.push("calendar-day--other-month");
+    return classes.join(" ");
+  };
+
+  // Helper to build time slot class names
+  const getTimeSlotClass = (isSelected: boolean, isDisabled: boolean) => {
+    if (isSelected) return "time-slot time-slot--selected";
+    if (isDisabled) return "time-slot time-slot--disabled";
+    return "time-slot time-slot--available";
+  };
+
   return (
-    <div className="min-h-screen bg-white flex flex-col pb-16">
+    <div className="page page--white page--with-bottom-nav">
       {/* Header */}
-      <div className="px-6 py-4 pt-11">
-        <h1 className="text-xl font-semibold text-[#00539B]">
+      <div className="page-header">
+        <h1 className="page-header__title">
           {isRescheduling ? "Reschedule Appointment" : "Book Appointment"}
         </h1>
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto px-6 pb-6">
+      <div className="content-section">
         <div className="flex flex-col md:flex-row md:items-start md:gap-8 lg:gap-12 space-y-6 md:space-y-0">
           {/* Left column: Calendar */}
           <div className="md:w-1/2 lg:w-2/5">
-            <h2 className="text-base md:text-lg font-semibold text-[#374151] mb-3">
+            <h2 className="heading-section">
               Select Date
             </h2>
 
             {/* Calendar Card */}
-            <div className="bg-[#F9FAFB] rounded-2xl p-4 shadow-sm">
+            <div className="calendar-card">
               {/* Month Header */}
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-[#111928]">
+              <div className="calendar-header">
+                <h3 className="calendar-header__title">
                   {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
                 </h3>
-                <div className="flex gap-2">
+                <div className="calendar-header__nav">
                   <button
                     onClick={handlePrevMonth}
-                    className="p-1 hover:bg-[#E5E7EB] rounded transition-colors"
+                    className="calendar-header__nav-btn"
                   >
-                    <ChevronLeft size={16} className="text-[#9CA3AF]" />
+                    <ChevronLeft size={16} className="icon-color-muted" />
                   </button>
                   <button
                     onClick={handleNextMonth}
-                    className="p-1 hover:bg-[#E5E7EB] rounded transition-colors"
+                    className="calendar-header__nav-btn"
                   >
-                    <ChevronRight size={16} className="text-[#00539B]" />
+                    <ChevronRight size={16} className="icon-color-primary" />
                   </button>
                 </div>
               </div>
 
               {/* Days of Week */}
-              <div className="grid grid-cols-7 gap-1 mb-2">
+              <div className="calendar-weekdays">
                 {daysOfWeek.map((day) => (
-                  <div
-                    key={day}
-                    className="text-center text-xs font-semibold text-[#4B5563] py-2"
-                  >
+                  <div key={day} className="calendar-weekdays__day">
                     {day}
                   </div>
                 ))}
               </div>
 
               {/* Calendar Days */}
-              <div className="grid grid-cols-7 gap-1">
+              <div className="calendar-days">
                 {calendarDays.map((item, index) => {
                   const isSelected =
                     selectedDate &&
@@ -239,25 +253,7 @@ export default function BookAppointment() {
                       key={index}
                       onClick={() => handleDateSelect(item.date, isDisabled)}
                       disabled={isDisabled}
-                      className={`
-                        aspect-square flex items-center justify-center rounded-lg text-xs font-bold transition-all
-                        ${isSelected ? "bg-[#00539B] text-white" : ""}
-                        ${
-                          isDisabled && !isSelected
-                            ? "text-[#D1D5DB] opacity-50 cursor-not-allowed"
-                            : ""
-                        }
-                        ${
-                          !isDisabled && !isSelected && isCurrentMonth
-                            ? "text-[#374151] hover:bg-[#E5E7EB]"
-                            : ""
-                        }
-                        ${
-                          !isDisabled && !isSelected && !isCurrentMonth
-                            ? "text-[#6B7280]"
-                            : ""
-                        }
-                      `}
+                      className={getCalendarDayClass(!!isSelected, isDisabled, isCurrentMonth)}
                     >
                       {item.day}
                     </button>
@@ -272,7 +268,7 @@ export default function BookAppointment() {
           <div className="md:flex-1 space-y-6">
             {/* Select Hour Section */}
             <div>
-              <h2 className="text-base md:text-lg font-semibold text-[#374151] mb-3">
+              <h2 className="heading-section">
                 Select Hour
               </h2>
 
@@ -291,16 +287,7 @@ export default function BookAppointment() {
                       key={time}
                       onClick={() => !isDisabled && setSelectedTime(time)}
                       disabled={isDisabled}
-                      className={`
-                        py-3 px-4 rounded-xl text-sm font-semibold transition-all min-h-[48px]
-                        ${
-                          isSelected
-                            ? "bg-[#00539B] text-white"
-                            : isDisabled
-                            ? "bg-[#F9FAFB] text-[#D1D5DB] cursor-not-allowed"
-                            : "bg-[#F9FAFB] text-[#6B7280] hover:bg-[#E5E7EB]"
-                        }
-                      `}
+                      className={getTimeSlotClass(isSelected, isDisabled)}
                     >
                       {time}
                       {isFull && <div className="text-xs mt-1">(Full)</div>}
@@ -311,25 +298,24 @@ export default function BookAppointment() {
 
               {/* Available Seats */}
               {selectedDate && selectedTime && (
-                <div className="mt-3 p-3 rounded-xl bg-[#F3F4F6] flex items-center justify-between">
+                <div className="seats-info">
                   <div>
-                    <p className="text-[11px] font-medium text-[#6B7280] uppercase tracking-wide">
+                    <p className="seats-info__label">
                       Seats availability
                     </p>
-                    <p className="text-sm font-semibold text-[#111827]">
+                    <p className="seats-info__count">
                       {seatsInfo.available} of {seatsInfo.total} seats available
                     </p>
                   </div>
-                  <div className="ml-3 w-20">
-                    <div className="h-2 rounded-full bg-[#E5E7EB] overflow-hidden">
+                  <div className="seats-info__bar-wrapper">
+                    <div className="seats-info__bar-bg">
                       <div
-                        className="h-full bg-[#10B981]"
+                        className="seats-info__bar-fill"
                         style={{
-                          width: `${
-                            seatsInfo.total
+                          width: `${seatsInfo.total
                               ? (seatsInfo.available / seatsInfo.total) * 100
                               : 0
-                          }%`,
+                            }%`,
                         }}
                       />
                     </div>
@@ -340,14 +326,14 @@ export default function BookAppointment() {
 
             {/* Location Section */}
             <div>
-              <label className="block text-sm font-semibold text-[#6B7280] mb-2">
+              <label className="block text-sm font-semibold text-muted mb-2">
                 Location
               </label>
               <input
                 type="text"
                 value="Oxy Office"
                 readOnly
-                className="w-full h-12 px-4 rounded-lg border border-[#D1D5DB] text-[#374151] bg-[#F9FAFB]"
+                className="input-readonly"
               />
             </div>
 

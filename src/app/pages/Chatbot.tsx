@@ -80,20 +80,19 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <div className="px-6 py-4 pt-11">
-        <h1 className="text-xl font-semibold text-[#00539B]">Chatbot</h1>
+    <div className="page page--white">
+      <div className="page-header">
+        <h1 className="page-header__title">Chatbot</h1>
       </div>
       <div className="flex-1 flex flex-col p-4">
         <div className="flex-1 overflow-y-auto space-y-2">
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`p-2 rounded-lg max-w-xs ${
-                msg.sender === "user"
-                  ? "bg-[#00539B] text-white self-end ml-auto"
-                  : "bg-[#F3F4F6] text-[#374151] self-start mr-auto"
-              }`}
+              className={`chat-message ${msg.sender === "user"
+                  ? "chat-message--user"
+                  : "chat-message--bot"
+                }`}
             >
               {msg.text}
             </div>
@@ -105,12 +104,12 @@ export default function ChatbotPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSend()}
-            className="flex-1 p-2 border border-[#D1D5DB] rounded-lg"
+            className="chat-input"
             placeholder="Type your message..."
           />
           <button
-          onClick={handleSend}
-          className="px-4 py-2 bg-[#00539B] text-white rounded-lg hover:bg-[#0052A3] transition-colors"
+            onClick={handleSend}
+            className="btn btn--primary btn--icon px-4 py-2"
           >
             Send
           </button>

@@ -50,46 +50,44 @@ export default function MyBookings() {
   const upcomingBookings = bookings.filter((b) => b.status === "upcoming");
 
   return (
-    <div className="min-h-screen bg-white flex flex-col pb-16">
+    <div className="page page--white page--with-bottom-nav">
       {/* Header */}
-      <div className="px-6 py-4 pt-11">
-        <h1 className="text-xl font-semibold text-[#00539B]">Home</h1>
+      <div className="page-header">
+        <h1 className="page-header__title">Home</h1>
       </div>
-  
+
       {/* Content */}
       <div className="flex-1">
         {/* My Bookings Title */}
         <div className="px-6 mb-4">
-          <h2 className="text-lg font-semibold text-[#374151]">My Bookings</h2>
+          <h2 className="text-lg font-semibold heading-dark">My Bookings</h2>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-[#E5E7EB]">
-          <div className="flex px-6">
+        <div className="tabs">
+          <div className="tabs__container">
             <button
               onClick={() => setActiveTab("upcoming")}
-              className={`flex-1 py-3 text-sm font-semibold transition-colors relative ${
-                activeTab === "upcoming"
-                  ? "text-[#00539B]"
-                  : "text-[#6B7280]"
-              }`}
+              className={`tabs__tab ${activeTab === "upcoming"
+                  ? "tabs__tab--active"
+                  : "tabs__tab--inactive"
+                }`}
             >
               Upcoming
               {activeTab === "upcoming" && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00539B]" />
+                <div className="tabs__indicator" />
               )}
             </button>
             <button
               onClick={() => setActiveTab("certificate")}
-              className={`flex-1 py-3 text-sm font-semibold transition-colors relative ${
-                activeTab === "certificate"
-                  ? "text-[#00539B]"
-                  : "text-[#6B7280]"
-              }`}
+              className={`tabs__tab ${activeTab === "certificate"
+                  ? "tabs__tab--active"
+                  : "tabs__tab--inactive"
+                }`}
             >
               Certificate
               {activeTab === "certificate" && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00539B]" />
+                <div className="tabs__indicator" />
               )}
             </button>
           </div>
@@ -102,35 +100,28 @@ export default function MyBookings() {
               {upcomingBookings.length > 0 ? (
                 <div className="space-y-4">
                   {upcomingBookings.map((booking) => (
-                    <div
-                      key={booking.id}
-                      className="bg-white border border-[#E5E7EB] rounded-2xl p-4 shadow-sm"
-                    >
+                    <div key={booking.id} className="booking-card">
                       {/* Date & Time */}
-                      <p className="text-sm font-bold text-[#1F2937] mb-3">
+                      <p className="booking-card__date">
                         {booking.date} - {booking.time}
                       </p>
 
-                      <div className="h-px bg-[#E5E7EB] mb-3" />
+                      <div className="booking-card__divider" />
 
                       {/* Training Info */}
-                      <div className="space-y-2 mb-3">
-                        <h3 className="font-bold text-[#1F2937]">
-                          {booking.training}
-                        </h3>
-                        <p className="text-sm text-[#4B5563]">{booking.company}</p>
+                      <div className="booking-card__info">
+                        <h3>{booking.training}</h3>
+                        <p>{booking.company}</p>
                         <div className="flex items-start gap-1">
-                          <MapPin size={16} className="text-[#4B5563] mt-0.5 flex-shrink-0" />
-                          <p className="text-sm text-[#4B5563]">
-                            {booking.location}
-                          </p>
+                          <MapPin size={16} className="icon-color-subtle mt-0.5 flex-shrink-0" />
+                          <p>{booking.location}</p>
                         </div>
                       </div>
 
-                      <div className="h-px bg-[#E5E7EB] mb-3" />
+                      <div className="booking-card__divider" />
 
                       {/* Action Buttons */}
-                      <div className="flex gap-3">
+                      <div className="booking-card__actions">
                         <Button
                           variant="secondary"
                           fullWidth
@@ -146,14 +137,14 @@ export default function MyBookings() {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-20 h-20 bg-[#F9FAFB] rounded-full flex items-center justify-center mb-4">
-                    <Calendar size={32} className="text-[#9CA3AF]" />
+                <div className="empty-state">
+                  <div className="empty-state__icon">
+                    <Calendar size={32} />
                   </div>
-                  <h3 className="text-lg font-semibold text-[#1F2937] mb-2">
+                  <h3 className="empty-state__title">
                     No Upcoming Training
                   </h3>
-                  <p className="text-sm text-[#6B7280] mb-6">
+                  <p className="empty-state__description">
                     You haven't scheduled any training sessions yet
                   </p>
                   <Button onClick={handleBookTraining}>
@@ -165,7 +156,7 @@ export default function MyBookings() {
           )}
 
           {activeTab === "certificate" && (
-            <div className="text-center py-12 text-[#6B7280]">
+            <div className="text-center py-12 text-muted">
               <p>No certificates available</p>
             </div>
           )}
@@ -186,7 +177,7 @@ export default function MyBookings() {
         title="Cancel Training?"
         message="Are you sure you want to cancel your scheduled training?"
         confirmText="Yes, Cancel"
-        cancelText="No, Keep" // Shortened for consistency
+        cancelText="No, Keep"
         confirmVariant="destructive"
       />
 

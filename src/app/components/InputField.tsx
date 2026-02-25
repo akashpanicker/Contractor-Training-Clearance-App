@@ -24,36 +24,36 @@ export function InputField({
   const hasError = showValidation && error;
   const hasSuccess = showValidation && isValid && value && !error;
 
+  const inputStateClass = hasError
+    ? "input-field__input--error"
+    : hasSuccess
+      ? "input-field__input--success"
+      : "input-field__input--default";
+
   return (
-    <div className="flex flex-col gap-2 w-full">
-      <label className="text-sm font-semibold text-[#6B7280]">{label}</label>
-      <div className="relative">
+    <div className="input-field">
+      <label className="input-field__label">{label}</label>
+      <div className="input-field__wrapper">
         <input
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className={`h-12 px-4 pr-12 rounded-lg border text-[#374151] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 transition-all w-full ${
-            hasError
-              ? "border-[#EF4444] focus:ring-[#EF4444] focus:border-[#EF4444]"
-              : hasSuccess
-              ? "border-[#10B981] focus:ring-[#10B981] focus:border-[#10B981]"
-              : "border-[#D1D5DB] focus:ring-[#00539B] focus:border-transparent"
-          }`}
+          className={`input-field__input ${inputStateClass}`}
         />
         {hasSuccess && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            <Check size={20} className="text-[#10B981]" />
+          <div className="input-field__icon input-field__icon--success">
+            <Check size={20} />
           </div>
         )}
         {hasError && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            <AlertCircle size={20} className="text-[#EF4444]" />
+          <div className="input-field__icon input-field__icon--error">
+            <AlertCircle size={20} />
           </div>
         )}
       </div>
       {hasError && (
-        <p className="text-xs text-[#EF4444] mt-1">{error}</p>
+        <p className="input-field__error-text">{error}</p>
       )}
     </div>
   );
