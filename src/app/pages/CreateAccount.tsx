@@ -150,7 +150,7 @@ export default function CreateAccount() {
           <p className="create-account__subtitle">
             Already have an account?{" "}
             <button
-              onClick={() => navigate("/my-bookings")}
+              onClick={() => navigate("/login")}
               className="create-account__link"
             >
               Login
