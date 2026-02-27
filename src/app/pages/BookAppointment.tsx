@@ -203,7 +203,7 @@ export default function BookAppointment() {
         <div className="flex flex-col md:flex-row md:items-start md:gap-8 lg:gap-12 space-y-6 md:space-y-0">
           {/* Left column: Calendar */}
           <div className="book-appointment__calendar-column">
-            <h2 className="heading-section">
+            <h2 className="heading-section mt-4">
               Select Date
             </h2>
 
@@ -268,7 +268,7 @@ export default function BookAppointment() {
           <div className="md:flex-1 space-y-6">
             {/* Select Hour Section */}
             <div>
-              <h2 className="heading-section">
+              <h2 className="heading-section mt-4">
                 Select Hour
               </h2>
 

@@ -104,7 +104,7 @@ export default function Profile() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-6 py-4">
+      <div className="flex-1 px-6 pt-4 pb-4">
         {/* Profile Avatar */}
         <div className="profile-avatar">
           <div className="profile-avatar__circle">

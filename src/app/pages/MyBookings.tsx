@@ -67,15 +67,11 @@ export default function MyBookings() {
     <div className="page page--white page--with-bottom-nav">
       {/* Header */}
       <div className="page-header">
-        <h1 className="page-header__title">Home</h1>
+        <h1 className="page-header__title">My Bookings</h1>
       </div>
 
       {/* Content */}
-      <div className="flex-1">
-        {/* My Bookings Title */}
-        <div className="px-6 mb-4">
-          <h2 className="text-lg font-semibold heading-dark">My Bookings</h2>
-        </div>
+      <div className="flex-1 pt-4">
 
         {/* Tabs */}
         <div className="tabs">
@@ -99,7 +95,7 @@ export default function MyBookings() {
                   : "tabs__tab--inactive"
                 }`}
             >
-              Certificate
+              Completed / Certificate
               {activeTab === "certificate" && (
                 <div className="tabs__indicator" />
               )}
@@ -112,7 +108,7 @@ export default function MyBookings() {
           {activeTab === "upcoming" && (
             <>
               {upcomingBookings.length > 0 ? (
-                <div className="space-y-4">
+                <div className="my-bookings__grid">
                   {upcomingBookings.map((booking) => (
                     <div key={booking.id} className="booking-card">
                       {/* Date & Time */}

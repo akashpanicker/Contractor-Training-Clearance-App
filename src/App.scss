@@ -57,7 +57,7 @@ $color-chat-bot-text: $color-gray-700;
     flex-direction: column;
 
     &--white {
-        background-color: $color-white;
+        background-color: #F4F6FA;
     }
 
     &--dark-gradient {
@@ -70,13 +70,16 @@ $color-chat-bot-text: $color-gray-700;
 }
 
 .page-header {
-    padding: 2.75rem 1.5rem 1rem;
+    padding: 1rem 1.5rem;
     position: relative;
+    background-color: $color-white;
+    border-bottom: 1px solid #E6EAF1;
 
     &__title {
         font-size: 1.25rem;
         font-weight: 600;
         color: $color-primary-light;
+        margin: 0;
     }
 
     &__edit-btn {
@@ -95,6 +98,13 @@ $color-chat-bot-text: $color-gray-700;
         &:hover {
             background-color: $color-gray-100;
         }
+    }
+}
+
+@media (min-width: 768px) {
+    .page-header {
+        padding-top: 34px;
+        padding-bottom: 16px;
     }
 }
 
@@ -600,6 +610,21 @@ $color-chat-bot-text: $color-gray-700;
 // -----------------------------------------------------------------------------
 // 7. BOOKING CARD
 // -----------------------------------------------------------------------------
+.my-bookings__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+    .my-bookings__grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        align-items: start;
+    }
+}
+
 .booking-card {
     background-color: $color-white;
     border: 1px solid $color-gray-200;
