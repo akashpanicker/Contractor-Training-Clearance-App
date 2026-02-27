@@ -6,6 +6,7 @@ interface UserData {
   email: string;
   phone: string;
   vendor: string;
+  isn: string;
 }
 
 interface UserContextType {
@@ -33,7 +34,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 export function useUser() {
   const context = useContext(UserContext);
   if (context === undefined) {
-    throw new Error("useUser must be used within a UserProvider");
+    // Fallback for cases where provider is not available
+    return { user: null, setUser: () => {}, clearUser: () => {} };
   }
   return context;
 }

@@ -19,6 +19,12 @@ interface Message {
 export function FloatingChatbot() {
   const { addBooking, updateBooking, bookings, cancelBooking, getAvailableSeats, incrementSeats } = useBooking();
   const { user } = useUser();
+
+  // Don't render if no user
+  if (!user) {
+    return null;
+  }
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {

@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { MapPin, Calendar } from "lucide-react";
 import { Button } from "../components/Button";
 import { BottomNav } from "../components/BottomNav";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useBooking } from "../contexts/BookingContext";
+import { useUser } from "../contexts/UserContext";
 import { toast } from "sonner";
 import { FloatingChatbot } from "../components/FloatingChatbot";
 
 export default function MyBookings() {
   const navigate = useNavigate();
+  const { user } = useUser();
   const { bookings, cancelBooking } = useBooking();
   const [activeTab, setActiveTab] = useState<"upcoming" | "certificate">(
     "upcoming"
@@ -18,6 +20,18 @@ export default function MyBookings() {
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
     null
   );
+
+  // Redirect to create account if no user data
+  useEffect(() => {
+    if (!user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
+  // Show loading state while redirecting
+  if (!user) {
+    return null;
+  }
 
   const handleCancelClick = (bookingId: string) => {
     setSelectedBookingId(bookingId);
