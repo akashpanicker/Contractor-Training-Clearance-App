@@ -481,6 +481,52 @@ $color-chat-bot-text: $color-gray-700;
     }
 }
 
+// Book Appointment desktop tuning:
+// cap calendar width so square day cells don't inflate total page height.
+.book-appointment__calendar-column {
+    width: 100%;
+}
+
+.book-appointment__confirm-sticky {
+    position: fixed;
+    left: 1.5rem;
+    right: 1.5rem;
+    bottom: calc(4.75rem + env(safe-area-inset-bottom));
+    z-index: 30;
+}
+
+// Prevent content from being obscured by sticky mobile confirm button.
+.book-appointment-page .content-section {
+    padding-bottom: 7rem;
+}
+
+@media (min-width: 768px) {
+    .book-appointment__calendar-column {
+        flex: 0 0 680px;
+        max-width: 680px;
+    }
+
+    .book-appointment__calendar-column .calendar-card {
+        padding: 0.875rem;
+    }
+
+    .book-appointment__calendar-column .calendar-weekdays__day {
+        padding: 0.375rem 0;
+    }
+
+    .book-appointment__confirm-sticky {
+        position: static;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        z-index: auto;
+    }
+
+    .book-appointment-page .content-section {
+        padding-bottom: 1.5rem;
+    }
+}
+
 // Time Slots
 .time-slot {
     padding: 0.75rem 1rem;

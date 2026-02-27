@@ -190,7 +190,7 @@ export default function BookAppointment() {
   };
 
   return (
-    <div className="page page--white page--with-bottom-nav">
+    <div className="page page--white page--with-bottom-nav book-appointment-page">
       {/* Header */}
       <div className="page-header">
         <h1 className="page-header__title">
@@ -202,7 +202,7 @@ export default function BookAppointment() {
       <div className="content-section">
         <div className="flex flex-col md:flex-row md:items-start md:gap-8 lg:gap-12 space-y-6 md:space-y-0">
           {/* Left column: Calendar */}
-          <div className="md:w-1/2 lg:w-2/5">
+          <div className="book-appointment__calendar-column">
             <h2 className="heading-section">
               Select Date
             </h2>
@@ -338,13 +338,15 @@ export default function BookAppointment() {
             </div>
 
             {/* Confirm Button */}
-            <Button
-              fullWidth
-              onClick={handleConfirm}
-              disabled={isConfirmDisabled}
-            >
-              Confirm
-            </Button>
+            <div className="book-appointment__confirm-sticky">
+              <Button
+                fullWidth
+                onClick={handleConfirm}
+                disabled={isConfirmDisabled}
+              >
+                Confirm
+              </Button>
+            </div>
           </div>
         </div>
       </div>
