@@ -256,6 +256,33 @@ $color-chat-bot-text: $color-gray-700;
     &:active {
         background-color: $color-error-active;
     }
+
+    &--header {
+        @extend .btn;
+        background-color: $color-error;
+        color: $color-white;
+        position: absolute;
+        right: 1.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: auto;
+        min-height: 40px;
+        height: 2.5rem;
+        padding: 0 0.875rem;
+        border-radius: 0.625rem;
+        font-size: 0.875rem;
+        line-height: 1;
+        display: inline-flex;
+        gap: 0.375rem;
+
+        &:hover {
+            background-color: $color-error-hover;
+        }
+
+        &:active {
+            background-color: $color-error-active;
+        }
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -1148,11 +1175,46 @@ $color-chat-bot-text: $color-gray-700;
         }
     }
 
+    &__name-row {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: fit-content;
+    }
+
     &__name {
         font-size: 1.5rem;
         font-weight: 700;
         color: $color-gray-800;
+        margin: 0;
     }
+
+    &__edit-btn {
+        position: absolute;
+        left: 100%;
+        margin-left: 0.5rem;
+        background: none;
+        border: none;
+        color: $color-primary;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        transition: background-color 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            background-color: $color-gray-100;
+        }
+    }
+}
+
+.profile-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .profile-detail {
@@ -1221,11 +1283,65 @@ $color-chat-bot-text: $color-gray-700;
     }
 }
 
+@media (min-width: 768px) {
+    .profile-details {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+        align-items: start;
+    }
+
+    // Keep desktop field flow as:
+    // Row 1: First Name | Last Name
+    // Row 2: Email | Phone
+    // Row 3: Vendor | ISN Number
+    .profile-details .profile-detail:nth-child(1) {
+        order: 1;
+    }
+
+    .profile-details .profile-detail:nth-child(2) {
+        order: 2;
+    }
+
+    .profile-details .profile-detail:nth-child(4) {
+        order: 3;
+    }
+
+    .profile-details .profile-detail:nth-child(5) {
+        order: 4;
+    }
+
+    .profile-details .profile-detail:nth-child(6) {
+        order: 5;
+    }
+
+    .profile-details .profile-detail:nth-child(3) {
+        order: 6;
+    }
+}
+
 .profile-actions {
     display: flex;
+    flex-direction: column;
     gap: 1rem;
-    justify-content: center;
+    justify-content: flex-start;
     margin-top: 2rem;
+
+    &__btn {
+        width: 100%;
+    }
+}
+
+@media (min-width: 768px) {
+    .profile-actions {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+
+        &__btn {
+            width: auto;
+        }
+    }
 }
 
 // -----------------------------------------------------------------------------

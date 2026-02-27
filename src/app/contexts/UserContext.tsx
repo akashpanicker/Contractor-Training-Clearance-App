@@ -1,12 +1,12 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
-interface UserData {
+export interface UserData {
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   vendor: string;
-  isn: string;
+  isnNumber: string;
 }
 
 interface UserContextType {

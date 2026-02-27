@@ -8,6 +8,7 @@ interface FormData {
   firstName: string;
   lastName: string;
   email: string;
+  isnNumber: string;
   phone: string;
   vendor: string;
 }
@@ -16,6 +17,7 @@ interface FormTouched {
   firstName: boolean;
   lastName: boolean;
   email: boolean;
+  isnNumber: boolean;
   phone: boolean;
   vendor: boolean;
 }
@@ -24,6 +26,7 @@ interface FormErrors {
   firstName?: string;
   lastName?: string;
   email?: string;
+  isnNumber?: string;
   phone?: string;
   vendor?: string;
 }
@@ -35,6 +38,7 @@ export default function CreateAccount() {
     firstName: "",
     lastName: "",
     email: "",
+    isnNumber: "",
     phone: "",
     vendor: "",
   });
@@ -42,6 +46,7 @@ export default function CreateAccount() {
     firstName: false,
     lastName: false,
     email: false,
+    isnNumber: false,
     phone: false,
     vendor: false,
   });
@@ -69,6 +74,13 @@ export default function CreateAccount() {
     return undefined;
   };
 
+  const validateIsnNumber = (isnNumber: string): string | undefined => {
+    if (!isnNumber) return "ISN Number is required";
+    const isnRegex = /^ISN-\d{7}$/;
+    if (!isnRegex.test(isnNumber)) return "ISN Number must be in format ISN-XXXXXXX";
+    return undefined;
+  };
+
   const validateVendor = (vendor: string): string | undefined => {
     if (!vendor) return "Vendor is required";
     if (vendor.length < 2) return "Must be at least 2 characters";
@@ -80,13 +92,14 @@ export default function CreateAccount() {
     firstName: validateName(formData.firstName),
     lastName: validateName(formData.lastName),
     email: validateEmail(formData.email),
+    isnNumber: validateIsnNumber(formData.isnNumber),
     phone: validatePhone(formData.phone),
     vendor: validateVendor(formData.vendor),
   };
 
   // Check if form is valid
-  const isFormValid = !errors.firstName && !errors.lastName && !errors.email && !errors.phone && !errors.vendor &&
-    formData.firstName && formData.lastName && formData.email && formData.phone && formData.vendor;
+  const isFormValid = !errors.firstName && !errors.lastName && !errors.email && !errors.isnNumber && !errors.phone && !errors.vendor &&
+    formData.firstName && formData.lastName && formData.email && formData.isnNumber && formData.phone && formData.vendor;
 
   const handleFieldChange = (field: keyof FormData, value: string) => {
     setFormData({ ...formData, [field]: value });
@@ -104,6 +117,7 @@ export default function CreateAccount() {
       firstName: true,
       lastName: true,
       email: true,
+      isnNumber: true,
       phone: true,
       vendor: true,
     });
@@ -176,6 +190,16 @@ export default function CreateAccount() {
               error={errors.email}
               isValid={!errors.email}
               showValidation={touched.email}
+            />
+
+            <InputField
+              label="ISN Number"
+              value={formData.isnNumber}
+              onChange={(value) => handleFieldChange("isnNumber", value)}
+              placeholder="ISN-XXXXXXX"
+              error={errors.isnNumber}
+              isValid={!errors.isnNumber}
+              showValidation={touched.isnNumber}
             />
 
             <InputField
